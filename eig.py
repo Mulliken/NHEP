@@ -31,7 +31,7 @@ def msgbox(msg):
 def lanczos(hop, hopH, num_ci, iter_num):
 
     # A = np.mat([[1j,1,6j,1j],[7,3j,8,11j],[9,5,1j,10j],[10,3.5,9j,0.3j]]) 
-    p = np.zeros((num_ci,1), dtype=complex)
+    p = np.zeros((num_ci,1), dtype=np.complex128)
     p = np.mat(p)
     p[0,0] = 1
     p[1,0] = 0.
@@ -63,19 +63,23 @@ def lanczos(hop, hopH, num_ci, iter_num):
     s = np.mat(hopH(_p.A.T[0]).ravel()).T
     r = r - np.multiply(_g, q)
     s = s - np.multiply(_b.H, p)
-    
+    print(num_ci)
     if iter_num >= num_ci:
         iter_num = num_ci
     else:
         pass
 
     for i in range(2, iter_num+1):
-        msgbox('@@@@@ THE {} ITERATION @@@@@'.format(i))
+        q_norm = np.linalg.norm(q)
+        if abs(q_norm - 1) >= 0.01:
+            msgbox('@@@@@ The {0} Iteration @@@@@\nTHE NORM OF Q {1}\nWARNING!!! The Normality of Trial Vectors is Voilated!!!'.format(i, q_norm))
+        else:
+            msgbox('@@@@@ The {0} Iteration @@@@@\nTHE NORM OF Q {1}'.format(i, q_norm))
         q = _q
         p = _p
         b = _b
         g = _g
-     
+        
     #    print(q,b,p,g)
         a = p.H * r
         r = r - np.multiply(a, q)
@@ -97,14 +101,15 @@ def lanczos(hop, hopH, num_ci, iter_num):
         omega = np.mat(omega).H
         #######################msgbox('THE EIGENVALUES ARE:\n{0}'.format(z))
         #print(np.linalg.norm(r),np.linalg.norm(s))
-        #if np.linalg.norm(r) ==0 or np.linalg.norm(s) ==0:
-            
+        #if np.linalg.norm(r) ==0 or np.linalg.norm(s) ==0:   
         #    break
         w = r.H * s
         #print(w)
         #if w==0:
         #    break
-    
+        z = sorted(z, key=lambda x: x.real)
+        print(z[0]//float(q_norm))
+        #z[0][0]//q_norm)
         _b = np.sqrt(abs(w))
         _g = np.divide(w.H, _b)
         _q = np.divide(r, _b)
